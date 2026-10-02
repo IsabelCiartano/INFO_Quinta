@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ristorante e Dipendenti</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    margin:20px;
+}
+
+.card{
+    border:1px solid black;
+    padding:10px;
+    margin:10px 0;
+    width:250px;
+}
+
+input{
+    display:block;
+    margin:5px 0;
+}
+</style>
+
+</head>
+<body>
+
+<h2>Ristorante</h2>
+
+<div id="nome"></div>
+<div id="indirizzo"></div>
+<ul id="menu"></ul>
+
+<hr>
+
+<h1> Gestione Dipendenti</h1>
+
+<button id="lista">LISTA</button>
+<button id="cerca">CERCA</button>
+<button id="aggiorna">AGGIUNGI</button>
+
+<div id="contenuto"></div>
+
+<script>
+
+
+fetch("ristorante.json")
+.then(r=>r.json())
+.then(data=>{
+
+    document.getElementById("nome").innerHTML="<b>"+data.nome+"</b>";
+    document.getElementById("indirizzo").innerHTML=data.indirizzo;
+
+    let menu=document.getElementById("menu");
+
+    data.menu.forEach(piatto=>{
+
+        menu.innerHTML+=`
+            <li>${piatto.nome} - ${piatto.prezzo} €</li>
+        `;
+
+    });
+
+});
+
+
+const url="https://69f9a3b3c509a40d3aa2e0a6.mockapi.io/api/v1/Dipendente";
+
+const lista=document.getElementById("lista");
+const cerca=document.getElementById("cerca");
+const aggiorna=document.getElementById("aggiorna");
+
+function creaCard(d){
+
+    const card = document.createElement("div");
+
+    card.classList.add("card");
+
+    card.innerHTML = `
+        <h3>${d.nome} ${d.cognome}</h3>
+        <p>Mansione: ${d.mansione}</p>
+        <p>Stipendio: ${d.stipendio} €</p>
+
+        <button onclick="modificaDipendente('${d.id}')">MODIFICA</button>
+        <button onclick="eliminaDipendente('${d.id}')">ELIMINA</button>
+    `;
+
+    return card;
+}
+
+function mostra(dipendenti){
+
+    const contenuto=document.getElementById("contenuto");
+
+    contenuto.innerHTML="";
+
+    dipendenti.forEach(d=>{
+
+        contenuto.appendChild(creaCard(d));
+
+    });
+
+}
+
+function carica(){
+
+    fetch(url)
+    .then(response=>response.json())
+    .then(data=>{
+
+        mostra(data);
+
+    });
+
+}
+
+
+function mostraFormRicerca(){
+
+    const div=document.getElementById("contenuto");
+
+    div.innerHTML=`
+
+        <input type="text" id="txtNome" placeholder="Nome dipendente">
+
+        <button id="btnRicerca">CERCA</button>
+
+        <div id="risultato"></div>
+
+    `;
+
+    document.getElementById("btnRicerca").addEventListener("click", cercaDipendente);
+
+}
+
+function cercaDipendente(){
+
+    const nome=document.getElementById("txtNome").value;
+
+    fetch(url)
+    .then(response=>response.json())
+    .then(dipendenti=>{
+
+        const trovato=dipendenti.find(d=>
+
+            d.nome.toUpperCase()==nome.toUpperCase()
+
+        );
+
+        const risultato=document.getElementById("risultato");
+
+        risultato.innerHTML="";
+
+        if(trovato){
+
+            risultato.appendChild(creaCard(trovato));
+
+        }
+
+        else{
+
+            risultato.innerHTML="<p>Dipendente non trovato.</p>";
+
+        }
+
+    });
+
+}
+
+function mostraFormNuovo(){
+
+    const div=document.getElementById("contenuto");
+
+    div.innerHTML=`
+
+        <input type="text" id="nomeDip" placeholder="Nome">
+
+        <input type="text" id="cognome" placeholder="Cognome">
+
+        <input type="text" id="mansione" placeholder="Mansione">
+
+        <input type="number" id="stipendio" placeholder="Stipendio">
+
+        <button id="btnSalva">SALVA</button>
+
+    `;
+
+    document.getElementById("btnSalva").addEventListener("click", aggiungiDipendente);
+
+}
+
+function aggiungiDipendente(){
+
+    const nuovoDipendente={
+
+        nome:document.getElementById("nomeDip").value,
+
+        cognome:document.getElementById("cognome").value,
+
+        mansione:document.getElementById("mansione").value,
+
+        stipendio:document.getElementById("stipendio").value
+
+    };
+
+    fetch(url,{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify(nuovoDipendente)
+
+    })
+
+    .then(response=>response.json())
+
+    .then(data=>{
+
+        alert("Dipendente aggiunto!");
+
+        carica();
+
+    });
+
+}
+function salvaModifica(id){
+
+    const dipendente = {
+
+        nome: document.getElementById("nomeDip").value,
+        cognome: document.getElementById("cognome").value,
+        mansione: document.getElementById("mansione").value,
+        stipendio: document.getElementById("stipendio").value
+
+    };
+
+    fetch(url + "/" + id, {
+
+        method: "PUT",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(dipendente)
+
+    })
+
+    .then(response => response.json())
+
+    .then(() => {
+
+        alert("Dipendente modificato");
+
+        carica();
+
+    })
+
+    .catch(error => console.log(error));
+
+}
+function modificaDipendente(id){
+
+    fetch(url + "/" + id)
+
+    .then(response => response.json())
+
+    .then(d => {
+
+        const div = document.getElementById("contenuto");
+
+        div.innerHTML = `
+
+            <input id="nomeDip" value="${d.nome}">
+            <input id="cognome" value="${d.cognome}">
+            <input id="mansione" value="${d.mansione}">
+            <input id="stipendio" value="${d.stipendio}">
+            <button id="btnModifica">SALVA MODIFICHE</button>
+        `;
+        document.getElementById("btnModifica")
+            .addEventListener("click", () => salvaModifica(id));
+    });
+
+}
+function eliminaDipendente(id){
+
+    fetch(url + "/" + id, {
+        method: "DELETE"
+    })
+
+    .then(() => {
+
+        alert("Dipendente eliminato");
+        carica();
+    })
+
+    .catch(error => console.log(error));
+
+}
+
+
+lista.addEventListener("click",carica);
+
+cerca.addEventListener("click",mostraFormRicerca);
+
+aggiorna.addEventListener("click",mostraFormNuovo);
+
+</script>
+
+</body>
+</html>

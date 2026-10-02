@@ -1,0 +1,35 @@
+{
+    "indirizzo": "Via Torino 8, Cuneo",
+    "stanze": [
+        {
+            "nome": "cucina",
+            "piano": 1,
+            "dispositivi": [
+                {
+                    "instanceOF": "Presa",
+                    "nome": "frigorifero",
+                    "stato": "ACCESO",
+                    "consumoWatt": 1200
+                }
+            ]
+        },
+        {
+            "nome": "Salotto",
+            "piano": 0,
+            "dispositivi": [
+                {
+                    "instanceOF": "Lampadina",
+                    "nome": "Lampada centrale",
+                    "stato": "ACCESO",
+                    "tempColoreK": 3000
+                },
+                {
+                    "instanceOF": "Termostato",
+                    "nome": "Termostato salotto",
+                    "stato": "SPENTO",
+                    "tempImpostataC": 20.0
+                }
+            ]
+        }
+    ]
+}

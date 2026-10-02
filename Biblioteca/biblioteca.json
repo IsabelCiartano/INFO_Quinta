@@ -1,0 +1,29 @@
+{
+  "biblioteca": {
+    "nome": "Biblioteca Comunale",
+    "libri": [
+      {
+        "id": 1,
+        "titolo": "I Promessi Sposi",
+        "autore": "Alessandro Manzoni",
+        "anno": 1840,
+        "inPrestito": true
+      },
+      {
+        "id": 2,
+        "titolo": "Il Piccolo Principe",
+        "autore": "Antoine de Saint-Exupéry",
+        "anno": 1943,
+        "inPrestito": false
+      }
+    ],
+    "riviste": [
+      {
+        "id": 1,
+        "titolo": "National Geographic",
+        "numero": 320,
+        "mese": "Giugno"
+      }
+    ]
+  }
+}

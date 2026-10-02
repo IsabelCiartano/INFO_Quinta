@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Biblioteca</title>
+<style>
+body{
+    font-family: Arial, sans-serif;
+    margin:20px;
+}
+
+input,button{
+    margin:5px;
+    padding:5px;
+}
+
+#biblioteca,#risultati,#listaPrestiti{
+    border:1px solid gray;
+    padding:10px;
+    margin-top:10px;
+}
+</style>
+</head>
+<body>
+
+<h1>Biblioteca</h1>
+
+<div id="biblioteca"></div>
+
+<hr>
+
+<h2>Nuovo Prestito</h2>
+
+<input id="utente" placeholder="Utente">
+<input id="titolo" placeholder="Titolo libro">
+<input type="date" id="dataPrestito">
+
+<button onclick="aggiungiPrestito()">Aggiungi</button>
+
+<hr>
+
+<h2>Cerca Prestito</h2>
+
+<input id="ricerca" placeholder="Nome utente o data">
+
+<button onclick="cercaPrestito()">Cerca</button>
+
+<div id="risultati"></div>
+
+<hr>
+
+<button onclick="chiudiPrestiti()">
+Chiudi tutti i prestiti in corso
+</button>
+
+<hr>
+
+<h2>Elimina Prestito</h2>
+
+<input id="idElimina" placeholder="ID prestito">
+
+<button onclick="eliminaPrestito()">
+Elimina
+</button>
+
+<hr>
+
+<h2>Lista Prestiti</h2>
+
+<div id="listaPrestiti"></div>
+
+<script>
+
+const API="https://69f9a3b3c509a40d3aa2e0a6.mockapi.io/api/v1/Prestito";
+
+fetch("biblioteca.json")
+.then(r=>r.json())
+.then(data=>{
+    let div=document.getElementById("biblioteca");
+    data.biblioteca.libri.forEach(libro=>{
+        div.innerHTML+=`
+            <h3>${libro.titolo}</h3>
+            <p>Autore: ${libro.autore}</p>
+            <p>In prestito: ${libro.inPrestito}</p>
+        `;
+    });
+    data.biblioteca.riviste.forEach(rivista=>{
+        div.innerHTML+=`
+            <h3>${rivista.titolo}</h3>
+            <p>Numero: ${rivista.numero}</p>
+        `;
+    });
+
+});
+
+function mostraPrestiti(){
+    fetch(API)
+    .then(r=>r.json())
+    .then(lista=>{
+        let div=document.getElementById("listaPrestiti");
+        div.innerHTML="";
+        lista.forEach(p=>{
+            div.innerHTML+=`
+            <p>
+            <b>ID:</b> ${p.id}<br>
+            <b>Utente:</b> ${p.utente}<br>
+            <b>Libro:</b> ${p.libro}<br>
+            <b>Prestito:</b> ${p.dataPrestito}<br>
+            <b>Restituzione:</b> ${p.dataRestituzione || "-"}<br>
+            <b>Restituito:</b> ${p.restituito}
+            </p>
+            <hr>
+            `;
+        });
+    });
+
+}
+
+mostraPrestiti();
+
+function aggiungiPrestito(){
+    let prestito={
+        utente:document.getElementById("utente").value,
+        libro:document.getElementById("titolo").value,
+        dataPrestito:document.getElementById("dataPrestito").value,
+        dataRestituzione:"",
+        restituito:false
+    };
+
+    fetch(API,{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify(prestito)
+    })
+    .then(()=>mostraPrestiti());
+    alert("prestito aggiunto");
+
+}
+
+function cercaPrestito(){
+    let valore=document.getElementById("ricerca").value.toLowerCase();
+    fetch(API)
+    .then(r=>r.json())
+    .then(lista=>{
+        let risultati=lista.filter(p=>p.utente.toLowerCase().includes(valore) || p.dataPrestito==valore);
+        let div=document.getElementById("risultati");
+        div.innerHTML="";
+        risultati.forEach(p=>{
+            div.innerHTML+=`
+            <p>
+            ${p.id} -
+            ${p.utente} -
+            ${p.libro} -
+            ${p.dataPrestito}
+            </p>
+            `;
+        });
+    });
+
+}
+
+function chiudiPrestiti(){
+    fetch(API)
+    .then(r=>r.json())
+    .then(lista=>{
+        let aperti=lista.filter(p=>!p.restituito);
+        aperti.forEach(p=>{
+            fetch(API+"/"+p.id,{
+                method:"PUT",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({...p,restituito:true,dataRestituzione:new Date().toISOString().split("T")[0]})
+            })
+            .then(()=>mostraPrestiti());
+        });
+    });
+    alert("prestiti chiusi");
+
+}
+
+
+function eliminaPrestito(){
+    let id=document.getElementById("idElimina").value;
+    fetch(API+"/"+id,{
+        method:"DELETE"
+    })
+    .then(()=>mostraPrestiti());
+    alert("prestito eliminato");
+}
+
+</script>
+
+</body>
+</html>

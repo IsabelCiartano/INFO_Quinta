@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //in javascript posso scrivere un oggetto senza aver bisogno di una classe 
+
+        const mario={//è const pk i valori all'interno posso cambiare ma l'oggetto non cambia il riferimento 
+        //tipo riferimento stringhe oggetti funzioni non contengono direttamente il valore ma l'indirizzo in cui è contenuto il valore (puntatore)
+            "nome":"mario",//notazione accettata sia con le virgolette tra i campi sia senza 
+            cognome:"rossi",//notazione letterale chiave:valore
+
+            visualizza:function(){
+                return this.nome + " "+ this.cognome
+            }
+        }
+        // oggetto istanziato senza una classe nota/definita simile a un dizionario python
+        //la diversità con il dizionario è che un oggetto può avere metodi (funzioni) mentre il dizionario no
+
+        mario.nome="luca";//dot notation
+        mario["cognome"]="Rosso";//bracket notation
+        //per ripulire una variabile utilizzo null e non undefined
+
+        console.log("typeof "+ typeof mario +"\n"+ mario.visualizza())//object luca rosso
+
+        //le funzioni e proprietà possono essere aggiunte o eliminate durante la scrittura del programma 
+
+        mario.eta=30;
+        console.log("età "+ mario.eta);//30 
+
+        //delete mario.eta;
+        console.log("età "+ mario.eta);//undefined
+
+        //ciclo per iterare sui membri di un oggetto FOR ... IN 
+        for(let chiave in mario){
+            console.log(chiave + ": "+ mario[chiave]); //come il dizionario in python
+        }
+        //stampa tutti i mebri comprese le funzioni con il loro codice 
+  
+        mario.visualizza=function(){
+            for(let chiave in this){
+                if (typeof this[chiave] !== "function"){
+                    console.log(chiave +" " +  this[chiave]) 
+                }
+            }
+        }
+        console.log("----")
+        mario.visualizza()
+
+        let obj1={valore:10}
+        let obj2=obj1// copia del riferimento
+
+        obj2.valore=20
+        console.log(obj1.valore+" "+obj2.valore)
+        //hanno lo stesso valore pk puntano alla stessa cella di memoria pk sono oggetti con = si asseggna lo stesso indirizzo di memoria 
+        //ciò che viene modificato in obj2 modifica anche obj1
+
+        // classi 
+
+        class Persona{
+            static specie ="homo sapiens"//attributo statico condiviso a tutte le istanze della classe 
+            static codice =1
+            #id //private, in javascrip poco usato non va dichiarata prima 
+
+
+            constructor(nome="mario", cognome="rossi"){// valori di default 
+                this.nome=nome;
+                this.cognome=cognome;
+                this.#id=Persona.codice++;//persona pk è statico quindi appartiene alla classe persona non all'oggetto this 
+
+            }
+
+            visualizza(){
+                return this.#id +" "+this.nome +" "+ this.cognome +" specie : "+Persona.specie;
+            }
+        }
+            io =new Persona("isabel","ciartano")
+            console.log(io.visualizza());
+            tu =new Persona(undefined,"verdi")
+            console.log(tu.visualizza())
+
+            io.visualizza=function(){//modificato solo all'oggetto
+                for(let membro in this){
+                    if (typeof this[membro] !== "function"){
+                        console.log(this[membro])
+                       
+                    }
+                }
+                 for(let membro in Persona){//per ciclare sulle variabili static 
+                    if (typeof Persona[membro] !== "function"){
+                        console.log(Persona[membro])
+                       
+                    }
+                }
+            }
+            io.visualizza()
+        
+
+    </script>
+</body>
+</html>

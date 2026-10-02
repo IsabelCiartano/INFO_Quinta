@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Casa Smart</title>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f2f2f2;
+    margin:20px;
+}
+
+.card{
+    border:1px solid black;
+    border-radius:10px;
+    padding:10px;
+    margin:10px;
+    background:white;
+}
+
+input,select,button{
+    margin:5px;
+    padding:5px;
+}
+
+#risultato{
+    margin-top:20px;
+    border:1px solid blue;
+    padding:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+<h1>Casa Smart</h1>
+<h2>Nuovo dispositivo</h2>
+<input type="text" id="nome" placeholder="Nome">
+<select id="tipo">
+<option>Presa</option>
+<option>Lampadina</option>
+<option>Termostato</option>
+</select>
+<input type="text" id="stanza" placeholder="Stanza">
+<button id="btnAggiungi">Aggiungi</button>
+
+<hr>
+
+<input type="text" id="cerca" placeholder="Cerca dispositivo">
+<button id="btnCerca">Cerca</button>
+<div id="risultato"></div>
+
+<hr>
+
+<div id="lista"></div>
+
+<script>
+
+const API="./sistemadomotico.json";
+let casa;
+const lista=document.getElementById("lista");
+const risultato=document.getElementById("risultato");
+
+fetch(API)
+.then(r=>r.json())
+.then(dati=>{
+    casa=dati;
+    mostraStanze();
+});
+
+
+
+function mostraStanze(){//mostra le stanze presenti nella casa
+
+    lista.innerHTML="";
+    casa.stanze.forEach(stanza=>{
+        const card=document.createElement("div");
+        card.className="card";
+        let nomiDispositivi=stanza.dispositivi.map(d=>d.nome);
+        card.innerHTML=`
+        <h2>${stanza.nome}</h2>
+        <p>Piano: ${stanza.piano}</p>
+        <p>Dispositivi: ${nomiDispositivi.join(", ")}</p>
+        `;
+        lista.appendChild(card);
+    });
+
+}
+
+
+
+
+//AGGIUNGI  dispositivo 
+
+document.getElementById("btnAggiungi").addEventListener("click",aggiungiDispositivo);
+
+function aggiungiDispositivo(){
+
+    const nome=document.getElementById("nome").value;
+    const tipo=document.getElementById("tipo").value;
+    const stanzaNome=document.getElementById("stanza").value;
+    if(nome=="" || stanzaNome==""){
+        alert("Compila tutti i campi");
+        return;
+    }
+    let stanza=casa.stanze.find(s=>s.nome.toLowerCase()==stanzaNome.toLowerCase() );
+
+    if(!stanza) {alert("Stanza non trovata");return;}
+
+    let dispositivo={
+        instanceOF:tipo,
+        nome:nome,
+        stato:"SPENTO"
+    };
+
+    if(tipo=="Presa")
+        dispositivo.consumoWatt=0;
+
+    if(tipo=="Lampadina")
+        dispositivo.tempColoreK=3000;
+
+    if(tipo=="Termostato")
+        dispositivo.tempImpostataC=20;
+
+    stanza.dispositivi.push(dispositivo);
+
+    mostraStanze();
+
+}
+
+
+
+
+//CERCA dispositivo
+
+document.getElementById("btnCerca").addEventListener("click",cercaDispositivo);
+
+function cercaDispositivo(){
+
+    risultato.innerHTML="";
+    const nome=document.getElementById("cerca").value;
+    let trovato=null;
+    let stanzaTrovata=null;
+
+    casa.stanze.forEach(stanza=>{
+let d=stanza.dispositivi.find( disp=>disp.nome.toLowerCase()==nome.toLowerCase());
+if(d){trovato=d;stanzaTrovata=stanza;}
+});
+
+    if(!trovato){risultato.innerHTML="<h3>Dispositivo non trovato</h3>";
+return;
+}
+
+    risultato.innerHTML=`
+    <h2>${trovato.nome}</h2>
+    <p>Tipo: ${trovato.instanceOF}</p>
+    <p>Stanza: ${stanzaTrovata.nome}</p>
+    <p>Stato: ${trovato.stato}</p>
+    <button onclick="modificaDispositivo('${trovato.nome}')">
+    Modifica
+    </button>
+    <button onclick="eliminaDispositivo('${trovato.nome}')">
+    Elimina
+    </button>`;
+
+}
+
+
+
+
+// MODIFICA 
+
+function modificaDispositivo(nome){
+
+    casa.stanze.forEach(stanza=>{
+        let disp=stanza.dispositivi.find(d=>d.nome==nome);
+
+        if(disp){
+            if(disp.stato=="ACCESO"){disp.stato="SPENTO";
+        }else{disp.stato="ACCESO";}
+
+        }
+
+    });
+
+    mostraStanze();
+    cercaDispositivo();
+
+}
+
+//ELIMINA 
+
+function eliminaDispositivo(nome){
+
+    casa.stanze.forEach(stanza=>{
+ stanza.dispositivi=stanza.dispositivi.filter(d=>d.nome!=nome); });
+
+  risultato.innerHTML="<h3>Dispositivo eliminato</h3>";
+    mostraStanze();
+
+}
+
+</script>
+</body>
+</html>
